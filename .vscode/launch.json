@@ -1,0 +1,59 @@
+{
+    "configurations": [
+        {
+            "name": "C: gcc.exe 生成并调试",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "D:/VsFile/build_exe_file/${fileBasenameNoExtension}.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "D:\\vscode\\mingw64\\bin\\gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "将反汇编风格设置为 Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build C", // 假设tasks.json中C编译任务的label是"build C"
+            //"condition": "basename(${file}) =~ /\\.(c)$/"
+        },
+        {
+            "name": "C++: g++.exe 生成并调试",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "D:/VsFile/build_exe_file/${fileBasenameNoExtension}.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "D:\\vscode\\mingw64\\bin\\gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "将反汇编风格设置为 Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build C++", // 假设tasks.json中C++编译任务的label是"build C++"
+            //"condition": "basename(${file}) =~ /\\.(cpp|cxx)$/"
+        }
+    ],
+    "version": "2.0.0"
+}
