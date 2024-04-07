@@ -34,6 +34,8 @@
             "args": [
                 "-g",
                 "${file}",
+                "-std=c++17",
+                "-lstdc++fs",
                 "-o",
                 "D:/VsFile/build_exe_file/${fileBasenameNoExtension}.exe"
             ],

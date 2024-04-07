@@ -1,20 +1,25 @@
+#include<string.h>
 #include<iostream>
-#include <iomanip>
-// 函数模板定义：一个通用的加法函数
-template <typename T>
-T add(T a, T b) {
-    return a + b;
-}
+#include <unordered_map>
 
-int main(void){
-    //
-    int sum_a_b=add(233,233);
-    double sum_A_B=add(233.0,233.0);
-    std::cout <<"基于模板实现的a+b整型结果: "<<sum_a_b << std::endl;
-    std::cout <<"基于模板实现的A+B整型结果: "<< std::fixed << std::setprecision(8) <<sum_A_B << std::endl;
-    
 
-    
-    //
+int main(){
+    std::unordered_map<int,std::string> map;
+    map[114]="Ikun";
+    map[514]="Six";
+    map[1919]="HeiZi";
+    std::string name =map[114];
+    std::cout << "The name for key 114 is: " << name << std::endl;
+    std::cout<<"\n";
+    for(auto kk:map){
+        std::cout<<kk.first<<" -> "<<kk.second<<std::endl;
+    }
+    map.erase(514);
+
+    for(auto iter=map.begin();iter!=map.end();++iter){
+        std::cout<<iter->first<<" -> "<<iter->second<<std::endl;
+
+    }
     return 0;
 }
+
