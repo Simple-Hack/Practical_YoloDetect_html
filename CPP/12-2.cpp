@@ -1,145 +1,72 @@
-#include <iostream>
-#define MAXSIZE 20
-#define MAX 65535
-int length=0;
-int root=0;
-int rootDist[MAXSIZE];
-bool visit[MAXSIZE];
+#include<iostream>
+#include<vector>
+const int N=1e6;
+int a[N];
+struct Node{
+    int r,l,sum;
+}tr[4*N+1];
 
-typedef struct{
-    char vertex[MAXSIZE];
-    int weight[MAXSIZE][MAXSIZE];
-}Graph;
-
-Graph G;
-
-void InputVertex(Graph& G){
-    int i;
-    char ch;
-    std::cout<<"InputVertex: "<<G.vertex<<std::endl;
-    
-    ch='A';
-    for(i=0;i<9 && ch!='\0';i++){
-        G.vertex[i]=ch;
-        ch++;
-    }
-    length=9;
+void pushup(int x){
+    tr[x].sum=tr[x*2].sum+tr[x*2+1].sum;
 }
 
-void GraphWeightInit(Graph& G){
-    for(int i=0;i<length;i++){
-        for(int j=0;j<length;j++){
-            if(i==j){
-                G.weight[i][j]=0;
-            }
-            else{
-                G.weight[i][j]=MAX;
-            }
-        }
-    }
-}
-
-int FindIndex(char ch){
-    int i;
-    for(i=0;i<length;i++){
-        if(G.vertex[i]==ch){
-            return i;
-        }
-    }
-    return -1;
-}
-
-void CreatGraph(){
-    int i,j,index,weight;
-    char ch;
-    for(i=0;i<length;i++){
-        std::cout<<"输入"<<G.vertex[i]<<"的邻接矩阵的顶点和权值（空格分隔，换行结束）"<<std::endl;
-        std::cin>>ch;
-        while (ch != '\n'){
-            while(ch==' '){
-                std::cin>>ch;
-                //continue;
-            }
-            index=FindIndex(ch);
-            std::cin>>weight;
-            while(weight==' '){
-                std::cin>>weight;
-                //
-                continue;
-            }
-            G.weight[i][index]=weight;
-            std::cin>>ch;
-        }
-    }
-
-}
-
-
-void Init(){
-    int i;
-    std::cout<<"输入根节点"<<std::endl;
-    std::cin>>root;
-    for(i=0;i<length;i++){
-        rootDist[i]=G.weight[root][i];
-        visit[i]=false;
-    }
-}
-
-int GetMinInVisit(){
-    int i,min=0;
-    for(i=0;i<length;i++){
-        if(!visit[i]){
-            if(rootDist[min]>rootDist[i] || rootDist[min]==0){
-                min=i;
-            }
-        }
-    }
-    return min;
-}
-
-bool IsNull(){
-    bool flag=true;
-    for(int i=0;i<length;i++){
-        if(!visit[i]){
-            flag=false;
-        }
-    }
-    return flag;
-}
-
-void Dijkstra(int index){
-    int i;
-    visit[index]=true;
-    std::cout<<G.vertex[index]<<rootDist[index]<<std::endl;
-    for(i=0;i<length;i++){
-        if(rootDist[i]>(rootDist[index]+G.weight[index][i])){
-            rootDist[i]=rootDist[index]+G.weight[index][i];
-        }
-    }
-    if(IsNull()){
+void build(int x,int l, int r){
+    tr[x].l=l; tr[x].r=r;
+    if (tr[x].l==tr[x].r){
+        tr[x].sum=a[l];
         return ;
     }
-    index=GetMinInVisit();
-    Dijkstra(index);
+    int mid=(l+r)/2;
+    build(x*2,l,mid);
+    build(x*2+1,mid+1,r);
+    pushup(x);
 }
-void print(){
-    for(int i=0;i<length;i++){
-        std::cout<<G.vertex[i]<<"邻接节点："<<std::endl;
-        for(int j=0;j<length;j++){
-            if(G.weight[i][j]!=0 && G.weight[i][j]!=MAX){
-                std::cout<<G.vertex[j]<<G.weight[i][j]<<std::endl;      
-            }
-        }
+
+int query(int x,int l,int r){
+    if(tr[x].l>=l && tr[x].r<=r){
+        return tr[x].sum;
     }
+    int sum=0;
+    int mid=(tr[x].l+tr[x].r)/2;
+    if(l<=mid){
+        sum+=query(x*2,l,r);
+    }
+    if(r>mid){
+        sum+=query(x*2+1,l,r);
+    }
+    return sum;
+}
+
+void change(int now,int x,int k){
+    if (tr[now].l==tr[now].r){
+        tr[now].sum+=k;
+        return;
+    }
+    int mid=(tr[now].l+tr[now].r)/2;
+    if (x<=mid){
+        change(now*2,x,k);
+    }else{
+        change(now*2+1,x,k);
+    }
+    pushup(now);
 }
 
 int main(){
-    InputVertex(G);
-    GraphWeightInit(G);
-    CreatGraph();
-    Init();
-    Dijkstra(root);
+    int n,m;
+    std::cin>>n>>m;
+    build(1,1,n);
+    for(int i=1;i<n+1;i++){
+        std::cin>>a[i];
+    }
+    while(--m){
+        int op,r,l;
+        std::cin>>op>>r>>l;
+        if(op==1){
+            change(1,r,l);
+        }else{
+            std::cout<<query(1,r,l)<<std::endl;
+        }
+    }
 
-    print();
     return 0;
 }
