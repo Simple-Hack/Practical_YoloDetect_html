@@ -18,7 +18,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "D:\\vscode\\mingw64\\bin\\gdb.exe",
+            "miDebuggerPath": "D:\\Code-Space\\mingw64\\bin\\gdb.exe",
             "setupCommands": [
                 {
                     "description": "为 gdb 启用整齐打印",
@@ -31,8 +31,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build C", // 假设tasks.json中C编译任务的label是"build C"
-            //"condition": "basename(${file}) =~ /\\.(c)$/"
+            "preLaunchTask": "build C"
         },
         {
             "name": "C++: g++.exe 生成并调试",
@@ -45,7 +44,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "D:\\vscode\\mingw64\\bin\\gdb.exe",
+            "miDebuggerPath": "D:\\Code-Space\\mingw64\\bin\\gdb.exe",
             "setupCommands": [
                 {
                     "description": "为 gdb 启用整齐打印",
@@ -58,8 +57,33 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build C++", // 假设tasks.json中C++编译任务的label是"build C++"
-            //"condition": "basename(${file}) =~ /\\.(cpp|cxx)$/"
+            "preLaunchTask": "build C++"
+        },
+        {
+            "name": "C/C++: gcc.exe 生成和调试活动文件",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "D:/VsFile/build_exe_file/${fileBasenameNoExtension}.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "D:\\Code-Space\\mingw64\\bin\\gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "将反汇编风格设置为 Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: gcc.exe 生成活动文件"
         }
     ],
     "version": "2.0.0"

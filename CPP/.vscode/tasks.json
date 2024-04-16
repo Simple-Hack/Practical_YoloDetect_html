@@ -1,17 +1,15 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558 
-    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
             "type": "shell",
-            "label": "g++.exe build active file",//任务的名字，就是刚才在命令面板中选择的时候所看到的，可以自己设置
-            "command": "D:/vscode/mingw64/bin/g++.exe",
-            "args": [//编译时候的参数
-                "-g",//添加gdb调试选项
+            "label": "g++.exe build active file",
+            "command": "D:\\Code-Space\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-g",
                 "${file}",
-                "-o",//指定生成可执行文件的名称
-                "D:/VsFile/build_exe_file/${fileBasenameNoExtension}.exe",
+                "-o",
+                "D:/VsFile/build_exe_file/${fileBasenameNoExtension}.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -19,10 +17,30 @@
             "problemMatcher": [
                 "$gcc"
             ],
+            "group": "build"
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe 生成活动文件",
+            "command": "D:\\Code-Space\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "D:/VsFile/build_exe_file/${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
             "group": {
                 "kind": "build",
-                "isDefault": true//表示快捷键Ctrl+Shift+B可以运行该任务
-            }
+                "isDefault": true
+            },
+            "detail": "调试器生成的任务。"
         }
     ]
 }

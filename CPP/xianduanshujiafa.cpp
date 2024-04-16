@@ -1,3 +1,5 @@
+//记住，pushup只有在更新时，以及查询时才执行，不设计儿子们就不使用pushup
+
 #include<iostream>
 
 const int N=1e5+10;

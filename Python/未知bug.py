@@ -5,7 +5,7 @@ class Solution:
         ans=-1
 
         while l<=r:
-            mid=int(l+(r-l)>>1)
+            mid=int(l+(r-l)//2)
             if mid*mid <=x:
                 ans=mid
                 l=mid+1
