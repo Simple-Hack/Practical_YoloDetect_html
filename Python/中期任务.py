@@ -178,7 +178,7 @@ class DrawingMethod(object):
                 self.canvas.unbind("<Button-3>")
                 messagebox.showinfo("提示","左键选择障碍物")
                 self.generate_points()
-                random_point=messagebox.askyesno("tips","默认生成迷宫不\n一定有通路")
+                random_point=messagebox.askyesno("tips","默认生成迷宫不")
                 if random_point:
                     self.generate_maze(self.width, self.height)
                 self.canvas.bind("<Button-1>",self.set_barriers)
@@ -384,9 +384,12 @@ class DrawingMethod(object):
                         self.changeState(next_p,PointState.PATH.value)
                     else:
                         self.changeState(next_p,PointState.START.value)
+                messagebox.showinfo("tips","找到了")
+                self.root.after(5000, self.root.destroy)
                 break
             if  len(open_list)==0 :
                 messagebox.showerror("不可理喻")
+                self.root.after(5000, self.root.destroy)
                 break
             self.canvas.update() 
             time.sleep(0.1)
@@ -395,7 +398,8 @@ class DrawingMethod(object):
 
 
     def the_Dijkstar_method(self):
-        messagebox.showinfo("Tips","Dijkstar")
+        messagebox.showinfo("Tips","Dijkstar is None")
+
         pass
     
     def bfs(self):
@@ -470,7 +474,7 @@ class DrawingMethod(object):
         messagebox.showinfo("Result","找不到")
         self.root.after(5000, self.root.destroy)  
 
-    def generate_maze(self,width=20, height=30, obstacle_probability=0.4):
+    def generate_maze(self,width=20, height=30, obstacle_probability=0.5):
         # 确保起始点和终点无障碍
         maze = [[0]*height for _ in range(width)]
         maze[self.start_point[0]][self.start_point[1]] = 0  # 起点

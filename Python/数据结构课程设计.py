@@ -14,7 +14,7 @@ class PointState(enum.Enum):
     # 在open list的方格
     OPEN = 'gold'
     # 在close list的方格
-    CLOSED = 'darkgray'
+    CLOSED = 'yellow'
     # 路径
     PATH = 'orangered'
 
@@ -194,6 +194,7 @@ class MiniMap:
                             self.changeState(pCur, PointState.OPEN.value)
                             # 将这个点加入open list
                             open_list.add((xCur, yCur))
+                            
                             heapq.heappush(heap, pCur)
             # 检测是否寻路完成
             if (xEnd, yEnd) in open_list:
@@ -212,4 +213,4 @@ class MiniMap:
 
 
 # 参数为地图高、宽、方格尺寸、起点坐标（0开始）、终点坐标（0开始）、延迟时间
-demo = MiniMap(20, 30, 30, (0, 0), (29, 19), 0.05)
+demo = MiniMap(20, 30, 40, (0, 0), (29, 19), 0.05)
