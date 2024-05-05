@@ -1,7 +1,10 @@
 #include<iostream>
 #include<algorithm>
 #include<cmath>
-const int MAXN=1e6+114;
+
+
+const int MAXN =1e6+114;
+
 int array[MAXN],cnt[MAXN],belong[MAXN];
 int n,m,size,bnum,now,ans[MAXN];
 
@@ -53,10 +56,10 @@ void del(int pos){
 int main(void){
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
-    std::cin>>n;
+    n=read();
     size=std::sqrt(n);
     bnum=int((n+size-1)/size);
-    for(int i=1;i<=n;i++){
+    for(int i=1;i<=bnum;i++){
         for(int j=(i-1)*size+1;j<=i*size;j++){
             belong[j]=i;
         }
