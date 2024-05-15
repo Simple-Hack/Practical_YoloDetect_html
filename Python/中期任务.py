@@ -26,18 +26,20 @@ class MyList(object):
             self.head= new_node
             self.tail= new_node
         else:
-            self.tail.next= new_node
+            if self.tail is not None:
+                self.tail.next= new_node
             new_node.prev= self.tail
             self.tail= new_node
             self.head.prev= self.tail
         self.size+=1
 
-    def pop(self)->Node:
+    def pop(self):
         ret=self.tail
         to_del=self.tail
         self.tail=self.tail.prev
         del to_del
-        return ret
+        self.size-=1
+        return ret.value
 
     def return_list(self,index:int):
         ret=self.head
@@ -378,18 +380,13 @@ class DrawingMethod(object):
             self.canvas.update() 
             time.sleep(0.1)
     
-    def the_Dijkstar_method(self):
-        messagebox.showinfo("Tips","Dijkstar is None")
-
-        pass
-    
     def bfs(self):
         messagebox.showinfo("Tips", "BFS")
         visited = [[False for _ in range(self.height + 10)] for _ in range(self.width + 10)]
         que = queue.Queue()
         que.put(self.start_point)
         visited[self.start_point[0]][self.start_point[1]] = True
-        ans_list = []
+        ans_list = MyList()
         end = False
 
         while not que.empty() and not end:
@@ -422,11 +419,11 @@ class DrawingMethod(object):
 
     def dfs(self):
         messagebox.showinfo("Tips","DFS")
-        path=[]
+        path=MyList()
         path.append(self.start_point)
         visited=[[False for _ in range(114)] for _ in range(114)]
         visited[self.start_point[0]][self.start_point[1]]=True
-        while len(path):
+        while path.size!=0:
             cur_x,cur_y=path.pop()
             if (cur_x,cur_y)==self.end_point:
                 break
@@ -446,10 +443,8 @@ class DrawingMethod(object):
                         return
                     path.append((next_x,next_y))
                     self.changeState(self.points_list.return_list(next_x*self.height+next_y),PointState.PATH.value)
-                
                 else:
                     index+=1
-
                 self.canvas.update()
                 time.sleep(0.02)
         messagebox.showinfo("Result","找不到")
