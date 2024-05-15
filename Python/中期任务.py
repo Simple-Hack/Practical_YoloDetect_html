@@ -39,11 +39,11 @@ class MyList(object):
         del to_del
         return ret
 
-    def return_list(self,index:int)->Node:
-        ret=self.head.next
+    def return_list(self,index:int):
+        ret=self.head
         for _ in range(index):
             ret=ret.next
-        return ret
+        return ret.value
 
     def size(self)->int:
         return self.size
@@ -99,7 +99,7 @@ class DrawingMethod(object):
         self.end_point = None
         
         #格子的集合
-        self.points_list = []
+        self.points_list = MyList()
 
         #主窗口
         self.root = tk.Tk()
@@ -193,25 +193,23 @@ class DrawingMethod(object):
     def generate_points(self):
 
         for i in range(self.width):
-            pre_list= []
             for j in range(self.height):
                 if (i,j)==self.start_point:
-                    pre_list.append(PointArray(i, j, 0, 0, PointState.START.value, None,
+                    self.points_list.append(PointArray(i, j, 0, 0, PointState.START.value, None,
                               self.canvas.create_rectangle((i * self.size + 3, j * self.size + 3),
                                                            ((i + 1) * self.size + 3, (j + 1) * self.size + 3),
                                                              fill=PointState.START.value)))
                     continue
                 elif (i,j)==self.end_point:
-                    pre_list.append(PointArray(i, j, 0, 0, PointState.END.value, None,
+                    self.points_list.append(PointArray(i, j, 0, 0, PointState.END.value, None,
                               self.canvas.create_rectangle((i * self.size + 3, j * self.size + 3),
                                                            ((i + 1) * self.size + 3, (j + 1) * self.size + 3),
                                                              fill=PointState.END.value)))
                     continue
-                pre_list.append(PointArray(i, j, 0, 0, PointState.UNUSED.value, None,
+                self.points_list.append(PointArray(i, j, 0, 0, PointState.UNUSED.value, None,
                               self.canvas.create_rectangle((i * self.size + 3, j * self.size + 3),
                                                            ((i + 1) * self.size + 3, (j + 1) * self.size + 3),
                                                              fill=PointState.UNUSED.value)))
-            self.points_list.append(pre_list)
         
 
     def draw_lattice(self):
@@ -224,12 +222,12 @@ class DrawingMethod(object):
         x = (event.x - 3) // self.size
         y = (event.y - 3) // self.size
         if x < self.width and y < self.height:
-            if self.points_list[x][y].state == PointState.BARRIER.value:
-                self.points_list[x][y].state = PointState.UNUSED.value
-                self.canvas.itemconfig(self.points_list[x][y].rectangle, fill=PointState.UNUSED.value)
-            elif self.points_list[x][y].state == PointState.UNUSED.value:
-                self.points_list[x][y].state = PointState.BARRIER.value
-                self.canvas.itemconfig(self.points_list[x][y].rectangle, fill=PointState.BARRIER.value)
+            if self.points_list.return_list(x*self.height+y).state == PointState.BARRIER.value:
+                self.points_list.return_list(x*self.height+y).state = PointState.UNUSED.value
+                self.canvas.itemconfig(self.points_list.return_list(x*self.height+y).rectangle, fill=PointState.UNUSED.value)
+            elif self.points_list.return_list(x*self.height+y).state == PointState.UNUSED.value:
+                self.points_list.return_list(x*self.height+y).state = PointState.BARRIER.value
+                self.canvas.itemconfig(self.points_list.return_list(x*self.height+y).rectangle, fill=PointState.BARRIER.value)
         
     def choose_method_finding_way(self, event):
         messagebox.showinfo("Tips", "Hello world")
@@ -302,8 +300,8 @@ class DrawingMethod(object):
         while current.father:
             self.changeState(current, PointState.PATH.value)
             current = current.father
-        self.changeState(self.points_list[(self.start_point[0] - 3) // self.size][(self.start_point[1] - 3) // self.size], PointState.START.value)
-        self.changeState(self.points_list[(self.end_point[0] - 3) // self.size][(self.end_point[1] - 3) // self.size], PointState.END.value)
+        self.changeState(self.points_list.return_list(((self.start_point[0] - 3) // self.size)*self.height+(self.start_point[1] - 3) // self.size), PointState.START.value)
+        self.changeState(self.points_list.return_list(((self.end_point[0] - 3) // self.size)*self.height+(self.end_point[1] - 3) // self.size), PointState.END.value)
 
 
     def the_Astar_method(self):
@@ -322,26 +320,26 @@ class DrawingMethod(object):
         start_x = self.start_point[0]
         start_y = self.start_point[1]
         open_list.add((start_x,start_y))
-        open_point_list.append(self.points_list[start_x][start_y])
+        open_point_list.append(self.points_list.return_list(start_x*self.height+start_y))
         while True:
             point_of_min_f=find_min_point(open_point_list)
             cur_x=point_of_min_f.x
             cur_y=point_of_min_f.y
             close_list.add((cur_x, cur_y))
             open_list.remove((cur_x,cur_y))
-            open_point_list.remove(self.points_list[cur_x][cur_y])
+            open_point_list.remove(self.points_list.return_list(cur_x*self.height+cur_y))
 
             if (cur_x,cur_y) != self.start_point:
-                self.changeState(self.points_list[cur_x][cur_y],PointState.CLOSED.value)
+                self.changeState(self.points_list.return_list(cur_x*self.height+cur_y),PointState.CLOSED.value)
                 
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # 包含对角线方向
                 next_x, next_y = cur_x + dx, cur_y + dy
                 if 0 <= next_x < self.width and 0 <= next_y < self.height and (next_x, next_y) not in close_list:
-                    neighbor = self.points_list[next_x][next_y]
+                    neighbor = self.points_list.return_list(next_x*self.height+next_y)
                     if neighbor.state != PointState.BARRIER.value and (next_x,next_y) not in close_list:
                         cost = 14 if dx != 0 and dy != 0 else 10  # 对角线与直行代价
                         if dx!=0 and dy!=0:
-                            if self.points_list[next_x][cur_y].state==PointState.BARRIER.value or self.points_list[cur_x][next_y].state==PointState.BARRIER.value:
+                            if self.points_list.return_list(next_x*self.height+next_y).state==PointState.BARRIER.value or self.points_list.return_list(cur_x*self.height+cur_y).state==PointState.BARRIER.value:
                                 continue
                         
                         if (neighbor.x,neighbor.y) not in open_list:
@@ -350,7 +348,7 @@ class DrawingMethod(object):
                             neighbor.father=point_of_min_f
                             open_list.add((neighbor.x,neighbor.y))
                             self.changeState(neighbor,PointState.OPEN.value)
-                            open_point_list.append(self.points_list[neighbor.x][neighbor.y])
+                            open_point_list.append(self.points_list.return_list(neighbor.x*self.height+neighbor.y))
                         
                         else:
                             if (cost+point_of_min_f.g)<neighbor.g:
@@ -359,7 +357,7 @@ class DrawingMethod(object):
                                 neighbor.father=point_of_min_f
                         
             if self.end_point in open_list:
-                next_p=self.points_list[self.end_point[0]][self.end_point[1]]
+                next_p=self.points_list.return_list(self.end_point[0]*self.height+self.end_point[1])
                 next_p.father=point_of_min_f
                 self.changeState(next_p,PointState.END.value)
                 while next_p:
@@ -404,15 +402,15 @@ class DrawingMethod(object):
 
             for dx, dy in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]:
                 next_px, next_py = cur_x + dx, cur_y + dy
-                if 0 <= next_px < self.width and 0 <= next_py < self.height and not visited[next_px][next_py] and self.points_list[next_px][next_py].state != PointState.BARRIER.value:
+                if 0 <= next_px < self.width and 0 <= next_py < self.height and not visited[next_px][next_py] and self.points_list.return_list(next_px*self.height+next_py).state != PointState.BARRIER.value:
                     if dx != 0 and dy != 0:
-                        if self.points_list[next_px][cur_y].state == PointState.BARRIER.value or self.points_list[cur_x][next_py].state == PointState.BARRIER.value:
+                        if self.points_list.return_list(next_px*self.height+cur_y).state == PointState.BARRIER.value or self.points_list.return_list(cur_x*self.height+next_py).state == PointState.BARRIER.value:
                             continue
                     visited[next_px][next_py] = True
                     que.put((next_px, next_py))
 
                     if (next_px, next_py) != self.start_point and (next_px, next_py) != self.end_point:
-                        self.changeState(self.points_list[next_px][next_py], PointState.QUEUE.value)
+                        self.changeState(self.points_list.return_list(next_px*self.height+next_py), PointState.QUEUE.value)
                     if (next_px,next_py)==self.end_point:
                         break
                     self.canvas.update()
@@ -439,7 +437,7 @@ class DrawingMethod(object):
                 next_x=dx[index]+cur_x
                 next_y=dy[index]+cur_y
                 if 0<=next_x<self.width and 0<=next_y<self.height \
-                    and self.points_list[next_x][next_y].state != PointState.BARRIER.value \
+                    and self.points_list.return_list(next_x*self.height+next_y).state != PointState.BARRIER.value \
                     and visited[next_x][next_y] == False:
                     visited[next_x][next_y]=True
                     if (next_x,next_y)==self.end_point:
@@ -447,7 +445,7 @@ class DrawingMethod(object):
                         self.root.after(5000, self.root.destroy)
                         return
                     path.append((next_x,next_y))
-                    self.changeState(self.points_list[next_x][next_y],PointState.PATH.value)
+                    self.changeState(self.points_list.return_list(next_x*self.height+next_y),PointState.PATH.value)
                 
                 else:
                     index+=1
@@ -489,7 +487,7 @@ class DrawingMethod(object):
         for i in range(self.width):
             for j in range(self.height):
                 if maze[i][j]==1:
-                    self.points_list[i][j].state=PointState.BARRIER.value
-                    self.changeState(self.points_list[i][j],PointState.BARRIER.value)
+                    self.points_list.return_list(i*self.height+j).state=PointState.BARRIER.value
+                    self.changeState(self.points_list.return_list(i*self.height+j),PointState.BARRIER.value)
 
 draw=DrawingMethod(20,30,40)
