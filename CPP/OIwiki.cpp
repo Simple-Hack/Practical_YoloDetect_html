@@ -51,14 +51,14 @@ inline int query(int x,int l,int r){
 }
 
 
-inline int read(){
+int read(){
     int x=0,w=1;
     char ch=0;
     while(ch<'0' || ch>'9'){
         if(ch=='-'){
             w=-1;
-            ch=getchar();
         }
+        ch=getchar();
     }
     while(ch>='0' && ch<='9'){
         x=x*10+(ch-'0');
