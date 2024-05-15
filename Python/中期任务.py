@@ -20,7 +20,6 @@ class MyList(object):
         self.head=None
         self.tail=None
 
-
     def append(self,data):
         new_node=self.Node(data)
         if self.head is None:
@@ -33,7 +32,6 @@ class MyList(object):
             self.head.prev= self.tail
         self.size+=1
 
-        
     def pop(self)->Node:
         ret=self.tail
         to_del=self.tail
@@ -116,8 +114,6 @@ class DrawingMethod(object):
         messagebox.showinfo('提示','左键选择起始点\n右键选择终止点')
 
         self.root.mainloop()
-
-        
 
     def on_left_click(self, event):
         x, y = event.x - 3, event.y - 3  # 转换为相对于画布原点的坐标
@@ -246,14 +242,8 @@ class DrawingMethod(object):
 
         var = tk.IntVar()
         var.set(1)
-
-        dijkstra_button = tk.Radiobutton(
-            algorithm_dialog, text="Dijkstra", variable=var, value=1,
-        )
-        dijkstra_button.pack(side=tk.LEFT)  # 使用pack布局
-
         astar_button = tk.Radiobutton(
-            algorithm_dialog, text="A*", variable=var, value=2,
+            algorithm_dialog, text="A*", variable=var, value=1,
         )
         astar_button.pack(side=tk.LEFT)  # 使用pack布局
 
@@ -261,7 +251,6 @@ class DrawingMethod(object):
             algorithm_dialog, text="BFS",variable=var,value=3,
         )
         bfs_button.pack(side=tk.LEFT)
-
 
         dfs_button = tk.Radiobutton(
             algorithm_dialog, text="DFS",variable=var,value=4,
@@ -272,10 +261,7 @@ class DrawingMethod(object):
         def on_confirm():
             selected_algorithm = var.get()
             if selected_algorithm == 1:
-                new_thread = threading.Thread(target=self.the_Dijkstar_method())
-                new_thread.start()
-            elif selected_algorithm == 2:
-                new_thread = threading.Thread(target=self.the_Astar_method())
+                new_thread = threading.Thread(target=self.the_Astar_method)
                 new_thread.start()
             elif selected_algorithm == 3:
                 new_thread = threading.Thread(target=self.bfs())
@@ -298,7 +284,7 @@ class DrawingMethod(object):
         close_button.pack(side=tk.BOTTOM, pady=5)
 
         # 使对话框居中显示
-        algorithm_dialog.update_idletasks()  # 更新窗口尺寸信息
+        algorithm_dialog.update_idletasks()  
         dialog_width = algorithm_dialog.winfo_width()
         dialog_height = algorithm_dialog.winfo_height()
         screen_width = algorithm_dialog.winfo_screenwidth()
@@ -394,9 +380,6 @@ class DrawingMethod(object):
             self.canvas.update() 
             time.sleep(0.1)
     
-
-
-
     def the_Dijkstar_method(self):
         messagebox.showinfo("Tips","Dijkstar is None")
 
