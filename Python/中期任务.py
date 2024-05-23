@@ -1,13 +1,39 @@
 import enum
-import heapq
-import queue
 import time
 import tkinter as tk
 from tkinter import messagebox
 import threading 
 import random
-class MyList(object):
+
+class MyQueue(object):
+    class Node(object):
+        def __init__(self,value):
+            self.next=None
+            self.value=value
     
+    def __init__(self):
+        self.head=None
+        self.tail=None
+
+    def empty(self)->bool:
+        return self.head is None
+
+    def put(self,value):
+        new_node=self.Node(value)
+        if self.head is None:
+            self.head=self.tail=new_node
+        else:
+            self.tail.next=new_node
+            self.tail=new_node
+
+    def get(self):
+        if self.head is None:
+            return None
+        del_node=self.head
+        self.head=self.head.next
+        return del_node.value
+
+class MyList(object):
     class Node(object):
         def __init__(self,value):
             self.next=None
@@ -30,6 +56,7 @@ class MyList(object):
                 self.tail.next= new_node
             new_node.prev= self.tail
             self.tail= new_node
+            self.tail.next=self.head
             self.head.prev= self.tail
         self.size+=1
 
@@ -118,7 +145,7 @@ class DrawingMethod(object):
         self.root.mainloop()
 
     def on_left_click(self, event):
-        x, y = event.x - 3, event.y - 3  # 转换为相对于画布原点的坐标
+        x, y = event.x - 3, event.y - 3  
         cell_x, cell_y = x // self.size, y // self.size
 
         if self.start_point is None and (cell_x,cell_y)!=self.end_point:
@@ -163,7 +190,7 @@ class DrawingMethod(object):
         self.canvas.create_rectangle(x * self.size + 3, y * self.size + 3,
                                      (x + 1) * self.size + 2, (y + 1) * self.size + 2,
                                      fill="blue",
-                                     tags=("end_point_rect",))  # 使用标签便于后续清除
+                                     tags=("end_point_rect",)) 
         self.end_point = (x, y)
 
     def confirm_selection(self):
@@ -193,7 +220,6 @@ class DrawingMethod(object):
             self.end_point = None
 
     def generate_points(self):
-
         for i in range(self.width):
             for j in range(self.height):
                 if (i,j)==self.start_point:
@@ -245,7 +271,7 @@ class DrawingMethod(object):
         astar_button = tk.Radiobutton(
             algorithm_dialog, text="A*", variable=var, value=1,
         )
-        astar_button.pack(side=tk.LEFT)  # 使用pack布局
+        astar_button.pack(side=tk.LEFT)  
 
         bfs_button = tk.Radiobutton(
             algorithm_dialog, text="BFS",variable=var,value=3,
@@ -339,9 +365,9 @@ class DrawingMethod(object):
                 if 0 <= next_x < self.width and 0 <= next_y < self.height and (next_x, next_y) not in close_list:
                     neighbor = self.points_list.return_list(next_x*self.height+next_y)
                     if neighbor.state != PointState.BARRIER.value and (next_x,next_y) not in close_list:
-                        cost = 14 if dx != 0 and dy != 0 else 10  # 对角线与直行代价
+                        cost = 14 if dx != 0 and dy != 0 else 10 
                         if dx!=0 and dy!=0:
-                            if self.points_list.return_list(next_x*self.height+next_y).state==PointState.BARRIER.value or self.points_list.return_list(cur_x*self.height+cur_y).state==PointState.BARRIER.value:
+                            if self.points_list.return_list(next_x*self.height+cur_y).state==PointState.BARRIER.value or self.points_list.return_list(cur_x*self.height+next_y).state==PointState.BARRIER.value:
                                 continue
                         
                         if (neighbor.x,neighbor.y) not in open_list:
@@ -383,7 +409,7 @@ class DrawingMethod(object):
     def bfs(self):
         messagebox.showinfo("Tips", "BFS")
         visited = [[False for _ in range(self.height + 10)] for _ in range(self.width + 10)]
-        que = queue.Queue()
+        que = MyQueue()
         que.put(self.start_point)
         visited[self.start_point[0]][self.start_point[1]] = True
         ans_list = MyList()
@@ -456,16 +482,13 @@ class DrawingMethod(object):
         maze[self.start_point[0]][self.start_point[1]] = 0  # 起点
         maze[self.end_point[0]][self.end_point[1]] = 0  # 终点
         
-        # 生成随机障碍物
         for i in range(width):
             for j in range(height):
-                # 起点、终点及周边格子不生成障碍物，以确保可达性
                 if (i,j)==self.start_point or (i,j) == self.end_point :
                     continue
                 if random.random() < obstacle_probability:
                     maze[i][j] = 1
                     
-        # 确保左右边缘有通路
         for i in range(width):
             if maze[i][0] == 1:  # 左边缘
                 maze[i][0] = 0
