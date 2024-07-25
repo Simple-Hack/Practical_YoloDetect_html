@@ -3,14 +3,10 @@ import math as ma
 #正向化
 def Positiveization(data:list[list[int]],flags:list[int],values:list[list[int]]) ->list[list[int]]:
     copy_data=data.copy()
-    for i in range(len(data)):
+    for i in range(len(flags)):
         cur_data = data[:,i]
-        if i >= 3:
-            return copy_data
         if flags[i] == 0:
-            min_data = min(cur_data)
-            for row in range(len(cur_data)):
-                copy_data[row][i]=copy_data[row][i]-min_data
+            continue
         elif flags[i] == 1:
             max_data = max(cur_data)
             for row in range(len(cur_data)):
@@ -58,7 +54,6 @@ def print_data(data:list[list[int]]):
 #概率结果
 def Probability_matrix(data:list[list[int]]):
     copy_data=data.copy()
-    every_col_sum=0
     for col in range(len(data[0])):
         x_sum=0
         for row in range(len(data)):
@@ -84,21 +79,25 @@ def Entropy_weight(data:list[list[int]]):
     for d in d_list:
         ans.append(d/sum(d_list))
     return ans
-    
-data_xlsx=pd.read_excel(r"D:\onedrive\电脑桌面\练习.xlsx",engine='openpyxl')
-data=data_xlsx.values
-init_data=data[1:,1:]
-flags=[1,2,3,0,0]
-values=[[],[180],[80,90],[],[]]
-positive_data=Positiveization(init_data,flags,values)
-#print_data(positive_data)
-standard_data=Standardization(positive_data)
-#print_data(standard_data)
-probal_data=Probability_matrix(standard_data)
-#print_data(probal_data)
-weight_data=Entropy_weight(probal_data)
-for data in weight_data:
-    print(f'{data:.4f}',end=' ')
+
+def calculate_weight():
+    data_xlsx=pd.read_excel(r"D:\onedrive\电脑桌面\练习.xlsx",engine='openpyxl')
+    data=data_xlsx.values
+    init_data=data[:,1:]
+    print(data)
+    flags=[1,2,3,0,0]
+    values=[[],[180],[80,90],[],[]]
+    positive_data=Positiveization(init_data,flags,values)
+    standard_data=Standardization(positive_data)
+    probal_data=Probability_matrix(standard_data)
+    weight_data=Entropy_weight(probal_data)
+    for i,data in enumerate(weight_data):
+        print(f'{data:.4f}',end=' ')
+        weight_data[i]=float(f'{data:.4f}')
+    return weight_data
+
+# calculate_weight()
+
 
 
 
