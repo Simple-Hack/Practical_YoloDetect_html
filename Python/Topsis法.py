@@ -1,4 +1,4 @@
-from 熵权法 import Positiveization,Standardization,print_data,Probability_matrix,Entropy_weight
+from 熵权法 import Positiveization,Standardization,calculate_weight
 import pandas as pd
 import math as ma
 
@@ -32,19 +32,25 @@ def Topsis_GoodAndBad(data:list[list[int]],weight:list[list[int]]):
 
 
 #0：极大，1：极小，2：中间型(best)，3：区间型([a,b])
-data_xlsx=pd.read_excel(r"D:\onedrive\电脑桌面\练习.xlsx",engine='openpyxl')
+data_xlsx=pd.read_excel(r"D:\onedrive\电脑桌面\111.xlsx",engine='openpyxl')
 data=data_xlsx.values
-init_data=data[1:,1:-1]
+#对数据进行切割，去除非数值数据
+init_data=data[:,1:]
+#print(init_data)
+flags=[3,2,0,1]
+values=[[2,4],[0.7],[],[]]
 
-weight=[1,1]
-flags=[0,1]
-values=[[],[]]
-
+weight,score=calculate_weight(r"D:\onedrive\电脑桌面\111.xlsx",flags,values)
+print('weight = ',weight)
 positive_data=Positiveization(init_data,flags,values)
 standard_data=Standardization(positive_data)
 ans=Topsis_GoodAndBad(standard_data,weight)
-print(ans)
-a=sum(ans)
+
+cal=0
 for i,da in enumerate(ans):
-    ans[i]=da/a
+    ans[i]=da/sum(ans)
+    cal+=1
     print(f'{ans[i]:.4f}',end=' ')
+    if cal==6:
+        cal=0
+        print('\n')

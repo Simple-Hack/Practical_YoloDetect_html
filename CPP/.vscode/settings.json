@@ -1,6 +1,8 @@
 {
     "files.associations": {
+      "*.m": "matlab",
       "*.py": "python",
+      "*.cpp": "cpp",
       "iostream": "cpp",
       "*.tcc": "cpp",
       "string": "cpp",
@@ -90,7 +92,13 @@
       "shared_mutex": "cpp",
       "thread": "cpp",
       "typeindex": "cpp",
-      "valarray": "cpp"
+      "valarray": "cpp",
+      "ranges": "cpp",
+      "format": "cpp",
+      "numbers": "cpp",
+      "span": "cpp",
+      "text_encoding": "cpp",
+      "variant": "cpp"
     },
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "aiXcoder.showTrayIcon": true
