@@ -1,0 +1,7 @@
+void main()
+{
+   if(i=0)int k&;
+     while(m<=7) k=13123;
+   else
+   return k=321;
+}

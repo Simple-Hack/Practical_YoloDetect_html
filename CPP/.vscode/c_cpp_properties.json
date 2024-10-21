@@ -1,21 +1,29 @@
 {
     "configurations": [
-      {
-        "name": "Win32",
-        "includePath": [
-          "${workspaceFolder}/**"
-        ],
-        "defines": [
-          "_DEBUG",
-          "UNICODE",
-          "_UNICODE"
-        ],
-        // 编译器路径，以后可直接在此修改
-        "compilerPath": "D:\\Code-Space\\GCC\\mingw64\\bin\\g++.exe",
-        "cStandard": "c11",
-        "cppStandard": "c++20",  // 更新为 C++20
-        "intelliSenseMode": "gcc-x64"
-      }
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:/Code-Space/GCC/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++",
+                "D:/Code-Space/GCC/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/x86_64-w64-mingw32",
+                "D:/Code-Space/GCC/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include/c++/backward",
+                "D:/Code-Space/GCC/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include",
+                "D:/Code-Space/GCC/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed",
+                "D:/Code-Space/GCC/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "__GNUC__=6",
+                "__cdecl=__attribute__((__cdecl__))"
+
+            ],
+            "compilerPath": "D:/Code-Space/GCC/mingw64/bin/g++.exe",
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
     ],
     "version": 4
-  }
+}

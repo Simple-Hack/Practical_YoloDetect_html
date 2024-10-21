@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "App",
+            "projectName": "OiWiki_1887ec1f"
+        },
+        {
+            "name": "Launch Current File",
+            "type": "java",
+            "request": "launch",
+            "mainClass": "${file:Basename}",
+            "projectName": "${workspaceFolder:Basename}",
+            "console": "internalConsole",
+            "vmArgs": "-Djava.library.path=${env:JAVA_HOME}/bin/server",
+            "env": {
+                "JAVA_HOME": "D:\\Code-Space\\Java\\JDK-23"
+            }
+        }
+    ]
+}

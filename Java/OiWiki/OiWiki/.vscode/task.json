@@ -1,0 +1,22 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "compileJava",
+            "type": "shell",
+            "command": "${java.home}/bin/javac",
+            "args": [
+                "-d",
+                "${fileDirname}",
+                "${file}"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$java-compiler"
+            ]
+        }
+    ]
+}
