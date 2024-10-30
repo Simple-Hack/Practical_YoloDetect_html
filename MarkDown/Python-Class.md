@@ -59,5 +59,9 @@ print("In global scope:", spam)
 
 ## 二：Class 属性
 
+### 特殊属性
+
+1. definition.__name__
+
 [^1]: [Class](https://docs.python.org/3/tutorial/classes.html#class-objects)
 [^2]: [NameSpace](https://docs.python.org/zh-cn/3/tutorial/classes.html#python-scopes-and-namespaces)
