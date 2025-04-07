@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>驾驶行为检测系统</title>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --primary-light: #e8eaf6;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --background-color: #f5f7fa;
+            --card-background: #ffffff;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+            --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            padding: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 36px;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-weight: 500;
+            font-size: 28px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+        }
+        
+        .upload-container {
+            border: 2px dashed var(--primary-color);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: var(--card-background);
+            box-shadow: var(--shadow);
+            position: relative;
+            min-height: 150px;
+            min-width: 200px;
+            width: 100%;
+            height: auto;
+            max-width: 800px;
+            max-height: 600px;
+            aspect-ratio: 16/9;
+        }
+        
+        .upload-container:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .upload-container.dragging {
+            background-color: rgba(66, 133, 244, 0.08);
+            border-color: var(--secondary-color);
+        }
+        
+        .upload-container i {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+        }
+        
+        #upload-label {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .upload-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        #image-preview {
+            max-width: 95%;
+            max-height: 95%;
+            width: auto;
+            height: auto;
+            margin: 0;
+            display: none;
+            border-radius: 8px;
+            object-fit: contain;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        #video-preview-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95%;
+            height: 95%;
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        #video-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        
+        button:hover {
+            background-color: #3a75d2;
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin: 24px 0;
+            gap: 16px;
+        }
+        
+        .results-container, .stats-container, .classes-carousel {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+            display: none;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* 媒体结果展示容器 */
+        .media-result-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: none;
+            aspect-ratio: 16/9;
+        }
+        
+        .media-result-container img,
+        .media-result-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        /* 视频控制器样式 - 修改进度条样式 */
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 0 0 8px 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .media-result-container:hover .video-controls {
+            opacity: 1;
+        }
+        
+        /* 增加进度条高度和交互区域 */
+        .progress-bar {
+            flex: 1;
+            height: 10px; /* 从5px增加到10px，提供更大的点击区域 */
+            background: rgba(255, 255, 255, 0.3);
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+            padding: 3px 0; /* 添加上下padding增加点击区域 */
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 5px;
+            width: 0%;
+        }
+        
+        /* 添加进度条拖动指示器 */
+        .progress-bar:hover .progress::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: -2.5px;
+            width: 15px;
+            height: 15px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        /* 隐藏帧标记 */
+        .frame-badge {
+            display: none !important; /* 强制隐藏帧数显示 */
+        }
+        
+        /* 确保视频可点击播放/暂停 */
+        #result-video {
+            cursor: pointer;
+        }
+        
+        /* 视频控制器样式 */
+        .play-pause-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px 10px;
+            box-shadow: none;
+        }
+        
+        .play-pause-btn:hover {
+            color: var(--primary-color);
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .time-display {
+            color: white;
+            font-size: 14px;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        /* 图表容器样式 */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-top: 24px;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .charts-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .chart-card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .chart-container {
+            flex: 1;
+            min-height: 250px;
+            position: relative;
+        }
+
+        /* 结果标签页样式 */
+        .results-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .results-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            position: relative;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .results-tab:hover {
+            color: var(--primary-color);
+        }
+
+        .results-tab.active {
+            color: var(--primary-color);
+        }
+
+        .results-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+
+        .results-pane {
+            display: none;
+        }
+
+        .results-pane.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        /* 增强后的统计卡片样式 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+        
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-light), white);
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(66, 133, 244, 0.1);
+            border-color: var(--primary-color);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--primary-color);
+            margin: 8px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 改进详细信息面板样式 */
+        .detail-item {
+            background: linear-gradient(135deg, var(--primary-light), white);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .detail-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(66, 133, 244, 0.1);
+        }
+        
+        .detail-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        .detail-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+        }
+        
+        .detail-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-class {
+            font-weight: 500;
+            font-size: 16px;
+        }
+        
+        .detail-id {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .detail-confidence {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .confidence-bar {
+            width: 100px;
+            height: 8px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+        }
+        
+        /* 美化翻页按钮 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination button {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border: 1px solid transparent;
+            transition: all 0.25s ease;
+        }
+        
+        .pagination button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f0f0f0;
+            color: #999;
+        }
+        
+        /* 改进类别摘要卡片 */
+        .classes-summary {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        
+        /* 添加类别卡片相关样式 */
+        .class-card {
+            background: linear-gradient(135deg, var(--primary-light), white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 16px;
+        }
+        
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .class-name {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .class-name i {
+            color: var(--primary-color);
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .class-count {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .confidence-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .confidence-item {
+            width: 100%;
+        }
+        
+        .confidence-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        .confidence-label-text {
+            color: var(--text-secondary);
+        }
+        
+        .confidence-label-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        /* 添加持续时间样式 */
+        .duration-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+            gap: 5px;
+        }
+        
+        /* 媒体查询增加持续时间在小屏幕上的样式 */
+        @media (max-width: 480px) {
+            .duration-badge {
+                font-size: 12px;
+                padding: 3px 8px;
+            }
+        }
+        
+        /* 无结果状态美化 */
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            background-color: var(--primary-light);
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .no-results i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            opacity: 0.7;
+        }
+
+        /* 新增文件类型徽章 */
+        .file-type-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 加载动画 */
+        .loader {
+            display: none;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 错误消息样式 */
+        .error-message {
+            background-color: #fee8e7;
+            color: #ea4335;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            border-left: 4px solid #ea4335;
+        }
+
+        /* 进度条容器 - 美化版 */
+        .progress-container {
+            display: none;
+            width: 100%;
+            background-color: var(--primary-light);
+            border-radius: 12px;
+            overflow: visible;
+            margin: 30px 0;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 4px;
+            height: 24px;
+        }
+
+        .progress-bar-processing {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            width: 0%;
+            position: relative;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(66, 133, 244, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        .progress-bar-processing::after {
+            content: attr(data-progress);
+            position: absolute;
+            top: -28px;
+            right: 0;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            transform: translateX(50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
+        
+        .progress-container:hover .progress-bar-processing::after,
+        .progress-bar-processing[data-progress="100%"] .progress-bar-processing::after {
+            opacity: 1;
+        }
+        
+        .progress-container::before {
+            content: "处理中...";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 12px;
+            z-index: 1;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px rgba(66, 133, 244, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(66, 133, 244, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(66, 133, 244, 0.5); }
+        }
+        
+        .progress-bar-processing {
+            animation: pulse 2s infinite;
+        }
+    </style>
+    <!-- 添加Chart.js库引用 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 添加Font Awesome图标库 -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <h1>车内物品检测系统</h1>
+        <p>上传图片或视频进行车内物品目标检测</p>
+    </header>
+    <div class="container">
+        <div class="upload-container" id="drop-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <label id="upload-label" for="file-input">点击或拖拽文件到此处</label>
+            <p class="upload-description">支持图片(JPG, PNG)和视频(MP4, MOV, AVI)格式</p>
+            <input type="file" id="file-input" accept="image/*,video/*">
+            <div class="file-type-badge" id="file-type-badge">
+                <i class="fas fa-image"></i> 图片
+            </div>
+            <img id="image-preview" alt="预览图像">
+            <div id="video-preview-container">
+                <video id="video-preview" controls></video>
+            </div>
+        </div>
+        <div class="button-container">
+            <button id="predict-button" disabled>
+                <i class="fas fa-search"></i>开始检测
+            </button>
+            <button id="reset-button">
+                <i class="fas fa-redo"></i>重新上传
+            </button>
+        </div>
+        
+        <!-- 媒体结果展示区 -->
+        <div class="media-result-container" id="image-result-container">
+            <img src="" alt="检测结果" id="result-image">
+        </div>
+        <div class="media-result-container" id="video-result-container">
+            <video id="result-video" controls autoplay></video>
+            <div class="video-controls">
+                <button class="play-pause-btn" id="play-pause-btn">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="time-display" id="time-display">00:00 / 00:00</div>
+            </div>
+        </div>
+        
+        <!-- 进度条容器 -->
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar-processing" id="progress-bar-processing" data-progress="0%"></div>
+        </div>
+        
+        <!-- 结果区域重组 -->
+        <div class="results-container" id="results-container">
+            <div class="results-tabs">
+                <div class="results-tab active" data-tab="statistics-tab">检测统计</div>
+                <div class="results-tab" data-tab="details-tab">详细信息</div>
+                <div class="results-tab" data-tab="charts-tab">图表分析</div>
+            </div>
+            
+            <!-- 统计面板 -->
+            <div class="results-pane active" id="statistics-tab">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">总检测数量</div>
+                        <div class="stat-value" id="total-count">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">检测类别数</div>
+                        <div class="stat-value" id="class-count">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">平均可信度</div>
+                        <div class="stat-value" id="avg-confidence">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">最大可信度</div>
+                        <div class="stat-value" id="max-confidence">0%</div>
+                    </div>
+                </div>
+                
+                <div class="classes-summary" id="classes-summary">
+                    <!-- 类别摘要将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 详细信息面板 -->
+            <div class="results-pane" id="details-tab">
+                <div id="results-list"></div>
+                <div class="pagination" id="pagination-controls"></div>
+            </div>
+            
+            <!-- 图表分析面板 -->
+            <div class="results-pane" id="charts-tab">
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-title">类别检测数量</div>
+                        <div class="chart-container">
+                            <canvas id="categoryCountChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">类别可信度比较</div>
+                        <div class="chart-container">
+                            <canvas id="confidenceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loader" id="loader"></div>
+        
+        <div class="error-message" id="error-message"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-input');
+            const imagePreview = document.getElementById('image-preview');
+            const videoPreviewContainer = document.getElementById('video-preview-container');
+            const videoPreview = document.getElementById('video-preview');
+            const predictButton = document.getElementById('predict-button');
+            const resetButton = document.getElementById('reset-button');
+            const loader = document.getElementById('loader');
+            const errorMessage = document.getElementById('error-message');
+            const resultsContainer = document.getElementById('results-container');
+            const resultsList = document.getElementById('results-list');
+            const uploadLabel = document.getElementById('upload-label');
+            const classesSummary = document.getElementById('classes-summary');
+            const paginationControls = document.getElementById('pagination-controls');
+            const fileTypeBadge = document.getElementById('file-type-badge');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBarProcessing = document.getElementById('progress-bar-processing');
+            
+            // 结果展示元素
+            const imageResultContainer = document.getElementById('image-result-container');
+            const videoResultContainer = document.getElementById('video-result-container');
+            const resultImage = document.getElementById('result-image');
+            const resultVideo = document.getElementById('result-video');
+            
+            // 视频控制元素
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const progress = document.getElementById('progress');
+            const timeDisplay = document.getElementById('time-display');
+            
+            // 统计元素
+            const totalCountElement = document.getElementById('total-count');
+            const avgConfidenceElement = document.getElementById('avg-confidence');
+            const maxConfidenceElement = document.getElementById('max-confidence');
+            const classCountElement = document.getElementById('class-count');
+            
+            // Chart.js图表
+            let categoryCountChart = null;
+            let confidenceChart = null;
+            
+            // 定义API端点变量
+            const API_BASE_URL = getAPIBaseUrl();
+            
+            function getAPIBaseUrl() {
+                const port = 5050; // 默认使用5050端口，与服务器一致
+                return `http://localhost:${port}`;
+            }
+            
+            const originalStyles = {
+                width: getComputedStyle(dropArea).width,
+                height: getComputedStyle(dropArea).height,
+                aspectRatio: getComputedStyle(dropArea).aspectRatio
+            };
+            
+            let selectedFile = null;
+            let dropAreaClickHandler = null;
+            let currentPage = 1;
+            const itemsPerPage = 10;
+            let allDetections = [];
+            let isVideoFile = false;
+            
+            // 视频时长相关变量
+            let videoDuration = 0;
+            let videoFps = 30;
+            
+            // 进度检查计时器
+            let progressCheckInterval = null;
+            
+            // 初始化界面状态
+            initializeUIState();
+            
+            // 初始化文件类型徽章和视频控制按钮
+            fileTypeBadge.style.display = 'none';
+            resetButton.style.display = 'none';
+            
+            function initializeUIState() {
+                // 确保重置按钮初始时隐藏
+                resetButton.style.display = 'none';
+                
+                // 确保上传图标和标签显示
+                document.querySelector('.fas.fa-cloud-upload-alt').style.display = 'block';
+                uploadLabel.style.display = 'block';
+                document.querySelector('.upload-description').style.display = 'block';
+                
+                // 确保预览图像和视频容器隐藏
+                imagePreview.style.display = 'none';
+                videoPreviewContainer.style.display = 'none';
+                
+                // 禁用预测按钮
+                predictButton.disabled = true;
+                
+                // 隐藏结果区域
+                hideResults();
+                
+                // 隐藏进度条
+                progressContainer.style.display = 'none';
+            }
+            
+            dropAreaClickHandler = () => {
+                fileInput.click();
+            };
+            
+            dropArea.addEventListener('click', dropAreaClickHandler);
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.classList.add('dragging');
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.classList.remove('dragging');
+                }, false);
+            });
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length) {
+                    handleFiles(files);
+                }
+            }
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files.length) {
+                    handleFiles(this.files);
+                }
+            });
+            
+            function handleFiles(files) {
+                selectedFile = files[0];
+                
+                // 检查文件类型
+                isVideoFile = selectedFile.type.startsWith('video/');
+                const isImageFile = selectedFile.type.startsWith('image/');
+                
+                if (!isImageFile && !isVideoFile) {
+                    showError('请选择有效的图片或视频文件');
+                    return;
+                }
+                
+                fileTypeBadge.style.display = 'flex';
+                fileTypeBadge.innerHTML = isVideoFile ? 
+                    '<i class="fas fa-video"></i> 视频' : 
+                    '<i class="fas fa-image"></i> 图片';
+                
+                const reader = new FileReader();
+                
+                if (isImageFile) {
+                    // 处理图片文件
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        videoPreviewContainer.style.display = 'none';
+                        
+                        imagePreview.onload = function() {
+                            const imgWidth = imagePreview.naturalWidth;
+                            const imgHeight = imagePreview.naturalHeight;
+                            const aspectRatio = imgWidth / imgHeight;
+                            
+                            dropArea.style.aspectRatio = aspectRatio;
+                            
+                            if (imgWidth < 300 && imgHeight < 200) {
+                                dropArea.style.width = '300px';
+                                dropArea.style.height = '200px';
+                                dropArea.style.aspectRatio = 'auto';
+                            }
+                        };
+                    };
+                    
+                    reader.readAsDataURL(selectedFile);
+                } else {
+                    // 处理视频文件
+                    const videoURL = URL.createObjectURL(selectedFile);
+                    videoPreview.src = videoURL;
+                    videoPreviewContainer.style.display = 'block';
+                    imagePreview.style.display = 'none';
+                    
+                    videoPreview.onloadedmetadata = function() {
+                        const aspectRatio = videoPreview.videoWidth / videoPreview.videoHeight;
+                        dropArea.style.aspectRatio = aspectRatio;
+                    };
+                }
+                
+                predictButton.disabled = false;
+                
+                document.querySelector('.fas.fa-cloud-upload-alt').style.display = 'none';
+                uploadLabel.style.display = 'none';
+                document.querySelector('.upload-description').style.display = 'none';
+                
+                dropArea.removeEventListener('click', dropAreaClickHandler);
+                
+                resetButton.style.display = 'inline-flex';
+                
+                hideError();
+                hideResults();
+                
+                // 将上传状态保存到会话存储中
+                sessionStorage.setItem('hasUploadedFile', 'true');
+            }
+            
+            resetButton.addEventListener('click', function() {
+                // 重置所有状态
+                resetUIState();
+                
+                // 清除会话存储中的上传状态
+                sessionStorage.removeItem('hasUploadedFile');
+            });
+            
+            function resetUIState() {
+                imagePreview.style.display = 'none';
+                imagePreview.src = '';
+                videoPreviewContainer.style.display = 'none';
+                videoPreview.src = '';
+                fileTypeBadge.style.display = 'none';
+                selectedFile = null;
+                isVideoFile = false;
+                
+                dropArea.style.width = originalStyles.width;
+                dropArea.style.height = originalStyles.height;
+                dropArea.style.aspectRatio = originalStyles.aspectRatio;
+                
+                predictButton.disabled = true;
+                
+                document.querySelector('.fas.fa-cloud-upload-alt').style.display = 'block';
+                uploadLabel.style.display = 'block';
+                document.querySelector('.upload-description').style.display = 'block';
+                
+                resetButton.style.display = 'none';
+                
+                dropArea.addEventListener('click', dropAreaClickHandler);
+                
+                hideResults();
+            }
+            
+            // 检查页面是否刚刚刷新，如果是，应该重置界面
+            window.addEventListener('pageshow', function(event) {
+                // 如果页面是从缓存加载的，可能保留了之前的状态，我们也需要重置
+                if (event.persisted) {
+                    resetUIState();
+                    sessionStorage.removeItem('hasUploadedFile');
+                }
+            });
+            
+            predictButton.addEventListener('click', async () => {
+                if (!selectedFile) {
+                    showError('请先选择文件');
+                    return;
+                }
+                
+                showLoader();
+                hideError();
+                hideResults();
+                
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                   
+                // 如果是视频文件，显示进度条
+                if (isVideoFile) {
+                    progressContainer.style.display = 'block';
+                    progressBarProcessing.style.width = '0%';
+                    progressBarProcessing.setAttribute('data-progress', '0%');
+                    
+                    // 开始检查进度
+                    startProgressCheck(selectedFile.name);
+                }
+                
+                try {
+                    const endpoint = isVideoFile ? '/predict_video' : '/predict';
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('服务器响应错误');
+                    }
+                    
+                    // 停止进度检查
+                    stopProgressCheck();
+                    
+                    const data = await response.json();
+                    displayResults(data);
+                } catch (error) {
+                    // 停止进度检查
+                    stopProgressCheck();
+                    showError('检测失败: ' + error.message);
+                } finally {
+                    hideLoader();
+                    progressContainer.style.display = 'none';
+                }
+            });
+            
+            // 开始定期检查进度
+            function startProgressCheck(fileName) {
+                // 清除已有的计时器
+                stopProgressCheck();
+                
+                // 创建新的计时器，每秒检查一次进度
+                progressCheckInterval = setInterval(async () => {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/progress?filename=${encodeURIComponent(fileName)}`);
+                        const data = await response.json();
+                        
+                        if (data.progress !== undefined) {
+                            const progressPercent = Math.round(data.progress * 100);
+                            progressBarProcessing.style.width = `${progressPercent}%`;
+                            progressBarProcessing.setAttribute('data-progress', `${progressPercent}%`);
+                            
+                            // 如果进度已完成，停止检查
+                            if (progressPercent >= 100) {
+                                stopProgressCheck();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('检查进度时出错:', error);
+                    }
+                }, 1000);
+            }
+            
+            // 停止进度检查
+            function stopProgressCheck() {
+                if (progressCheckInterval) {
+                    clearInterval(progressCheckInterval);
+                    progressCheckInterval = null;
+                }
+            }
+            
+            function displayResults(data) {
+                allDetections = data.detections || [];
+                   
+                if (data.statistics) {
+                    totalCountElement.textContent = data.statistics.total_count;
+                    classCountElement.textContent = data.statistics.class_count;
+                    avgConfidenceElement.textContent = (data.statistics.avg_confidence * 100).toFixed(2) + '%';
+                    maxConfidenceElement.textContent = (data.statistics.max_confidence * 100).toFixed(2) + '%';
+                }
+                
+                // 获取视频信息
+                if (data.video_info) {
+                    videoFps = data.video_info.fps || 30;
+                    videoDuration = data.video_info.total_frames / videoFps || 0;
+                }
+                        
+                // 使用从服务器直接获取的视频时长和FPS（如果有的话）
+                if (data.statistics && data.statistics.video_duration) {
+                    videoDuration = data.statistics.video_duration;
+                }
+                if (data.statistics && data.statistics.fps) {
+                    videoFps = data.statistics.fps;
+                }
+                
+                if (data.statistics && data.statistics.class_details) {
+                    generateClassesSummary(data.statistics.class_details);
+                    generateCharts(data.statistics.class_details);
+                }
+                
+                currentPage = 1;
+                displayDetailedResults(currentPage);
+                
+                // 显示图像或视频结果
+                if (isVideoFile && data.video_url) {
+                    // 构建完整的视频URL并添加时间戳以避免缓存问题
+                    const timestamp = new Date().getTime();
+                    const fullVideoUrl = `${API_BASE_URL}${data.video_url}?t=${timestamp}`;
+                    console.log("加载视频：", fullVideoUrl);
+                    try {
+                        resultVideo.src = fullVideoUrl;
+                        
+                        // 显示视频结果容器
+                        videoResultContainer.style.display = 'block';
+                        imageResultContainer.style.display = 'none';
+                        
+                        // 初始化视频控制
+                        initVideoControls(resultVideo);
+                        
+                        // 监听视频加载错误
+                        resultVideo.onerror = function() {
+                            console.error("视频加载失败:", resultVideo.error);
+                            showError(`视频加载失败: ${resultVideo.error ? resultVideo.error.message : '未知错误'}`);
+                        };
+                        
+                        // 当视频加载完成后自动播放
+                        resultVideo.onloadeddata = function() {
+                            console.log("视频加载完成，准备播放");
+                            resultVideo.play().catch(e => console.error("自动播放失败:", e));
+                        };
+                    } catch (error) {
+                        console.error("加载视频时出错:", error);
+                        showError("加载视频时出错: " + error.message);
+                    }
+                } else if (!isVideoFile && data.image_url) {
+                    const fullImageUrl = `${API_BASE_URL}${data.image_url}`;
+                    resultImage.src = fullImageUrl;
+                    
+                    // 显示图像结果容器
+                    imageResultContainer.style.display = 'block';
+                    videoResultContainer.style.display = 'none';
+                }
+                
+                resultsContainer.style.display = 'block';
+                resultsContainer.classList.add('fade-in');
+            }
+            
+            function initVideoControls(videoElement) {
+                // 更新播放/暂停按钮
+                function updatePlayPauseBtn() {
+                    if (videoElement.paused) {
+                        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    } else {
+                        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    }
+                }
+                
+                // 更新时间显示
+                function updateProgress() {
+                    const currentTime = formatTime(videoElement.currentTime);
+                    const duration = formatTime(videoElement.duration);
+                    timeDisplay.textContent = `${currentTime} / ${duration}`;
+                    
+                    const value = (videoElement.currentTime / videoElement.duration) * 100;
+                    progress.style.width = value + '%';
+                }
+                
+                // 将秒数格式化为 mm:ss
+                function formatTime(seconds) {
+                    const minutes = Math.floor(seconds / 60);
+                    seconds = Math.floor(seconds % 60);
+                    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+                
+                // 视频事件
+                // 播放/暂停按钮点击事件
+                playPauseBtn.addEventListener('click', function() {
+                    if (videoElement.paused || videoElement.ended) {
+                        videoElement.play();
+                    } else {
+                        videoElement.pause();
+                    }
+                });
+                
+                // 添加视频点击事件实现播放/暂停
+                videoElement.addEventListener('click', function() {
+                    if (videoElement.paused || videoElement.ended) {
+                        videoElement.play();
+                    } else {
+                        videoElement.pause();
+                    }
+                });
+                
+                // 改进进度条拖动逻辑
+                let isDragging = false;
+                
+                // 鼠标按下开始拖动
+                progressBar.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    updateVideoProgress(e);
+                });
+                
+                // 鼠标移动时如果正在拖动则更新进度
+                document.addEventListener('mousemove', function(e) {
+                    if (isDragging) {
+                        updateVideoProgress(e);
+                    }
+                });
+                
+                // 鼠标松开结束拖动
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+                
+                // 更新视频进度的函数
+                function updateVideoProgress(e) {
+                    const progressBarRect = progressBar.getBoundingClientRect();
+                    const percent = Math.min(Math.max(0, (e.clientX - progressBarRect.left) / progressBarRect.width), 1);
+                    videoElement.currentTime = percent * videoElement.duration;
+                }
+                
+                // 进度条单击事件 - 保留原有的单击功能
+                progressBar.addEventListener('click', function(e) {
+                    updateVideoProgress(e);
+                });
+                
+                // 视频事件
+                videoElement.addEventListener('play', updatePlayPauseBtn);
+                videoElement.addEventListener('pause', updatePlayPauseBtn);
+                videoElement.addEventListener('timeupdate', updateProgress);
+                videoElement.addEventListener('loadedmetadata', updateProgress);
+                
+                // 显示视频控制器
+                videoElement.controls = false;
+            }
+            
+            function generateClassesSummary(classDetails) {
+                classesSummary.innerHTML = '';
+                
+                if (classDetails.length === 0) {
+                    classesSummary.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-search"></i>
+                            <p>未检测到任何目标</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                classDetails.forEach(classDetail => {
+                    const classCard = document.createElement('div');
+                    classCard.className = 'class-card';
+                    
+                    const avgConfidencePercent = (classDetail.avg_confidence * 100).toFixed(2);
+                    const maxConfidencePercent = (classDetail.max_confidence * 100).toFixed(2);
+                    
+                    let classIcon = 'fa-box';
+                    if (classDetail.name.toLowerCase().includes('phone') || 
+                       classDetail.name.toLowerCase().includes('mobile')) {
+                        classIcon = 'fa-mobile-alt';
+                    } else if (classDetail.name.toLowerCase().includes('car') || 
+                               classDetail.name.toLowerCase().includes('vehicle')) {
+                        classIcon = 'fa-car';
+                    } else if (classDetail.name.toLowerCase().includes('person') || 
+                               classDetail.name.toLowerCase().includes('people')) {
+                        classIcon = 'fa-person';
+                    } else if (classDetail.name.toLowerCase().includes('bag') || 
+                               classDetail.name.toLowerCase().includes('luggage')) {
+                        classIcon = 'fa-briefcase';
+                    } else if (classDetail.name.toLowerCase().includes('bottle') || 
+                               classDetail.name.toLowerCase().includes('drink')) {
+                        classIcon = 'fa-bottle-water';
+                    } else if (classDetail.name.toLowerCase().includes('安全')) {
+                        classIcon = 'fa-shield-alt';
+                    } else if (classDetail.name.toLowerCase().includes('疲劳')) {
+                        classIcon = 'fa-bed';
+                    } else if (classDetail.name.toLowerCase().includes('分心') || 
+                               classDetail.name.toLowerCase().includes('注意力')) {
+                        classIcon = 'fa-exclamation-triangle';
+                    } else if (classDetail.name.toLowerCase().includes('抽烟')) {
+                        classIcon = 'fa-smoking';
+                    } else if (classDetail.name.toLowerCase().includes('电话')) {
+                        classIcon = 'fa-phone';
+                    } else if (classDetail.name.toLowerCase().includes('喝水')) {
+                        classIcon = 'fa-glass-water';
+                    }
+                    
+                    // 计算持续时间显示
+                    let durationHtml = '';
+                    if (isVideoFile && classDetail.duration !== undefined) {
+                        durationHtml = `
+                            <div class="duration-badge">
+                                <i class="fas fa-clock"></i>
+                                <span>${classDetail.duration}秒</span>
+                            </div>
+                        `;
+                    }
+                    
+                    classCard.innerHTML = `
+                        <div class="class-header">
+                            <span class="class-name">
+                                <i class="fas ${classIcon}"></i>
+                                ${classDetail.name}
+                            </span>
+                            <span class="class-count">${classDetail.count}</span>
+                        </div>
+                        <div class="confidence-stat">
+                            <div class="confidence-item">
+                                <div class="confidence-label">
+                                    <span class="confidence-label-text">平均置信度</span>
+                                    <span class="confidence-label-value">${avgConfidencePercent}%</span>
+                                </div>
+                                <div class="confidence-progress">
+                                    <div class="confidence-progress-avg" style="width: ${avgConfidencePercent}%"></div>
+                                </div>
+                            </div>
+                            <div class="confidence-item">
+                                <div class="confidence-label">
+                                    <span class="confidence-label-text">最高置信度</span>
+                                    <span class="confidence-label-value">${maxConfidencePercent}%</span>
+                                </div>
+                                <div class="confidence-progress">
+                                    <div class="confidence-progress-max" style="width: ${maxConfidencePercent}%"></div>
+                                </div>
+                            </div>
+                            ${durationHtml}
+                        </div>
+                    `;
+                    
+                    classesSummary.appendChild(classCard);
+                });
+            }
+            
+            function generateCharts(classDetails) {
+                if (categoryCountChart) categoryCountChart.destroy();
+                if (confidenceChart) confidenceChart.destroy();
+                
+                const labels = classDetails.map(detail => detail.name);
+                const counts = classDetails.map(detail => detail.count);
+                const avgConfidences = classDetails.map(detail => detail.avg_confidence * 100);
+                const maxConfidences = classDetails.map(detail => detail.max_confidence * 100);
+                
+                const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+                const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
+                
+                const countCtx = document.getElementById('categoryCountChart').getContext('2d');
+                categoryCountChart = new Chart(countCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '检测数量',
+                            data: counts,
+                            backgroundColor: primaryColor,
+                            borderColor: primaryColor,
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                const confCtx = document.getElementById('confidenceChart').getContext('2d');
+                confidenceChart = new Chart(confCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '平均可信度',
+                                data: avgConfidences,
+                                backgroundColor: primaryColor,
+                                borderColor: primaryColor,
+                                borderWidth: 1,
+                                borderRadius: 4
+                            },
+                            {
+                                label: '最高可信度',
+                                data: maxConfidences,
+                                backgroundColor: secondaryColor,
+                                borderColor: secondaryColor,
+                                borderWidth: 1,
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.raw.toFixed(2) + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function displayDetailedResults(page) {
+                const startIndex = (page - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, allDetections.length);
+                const currentPageDetections = allDetections.slice(startIndex, endIndex);
+                
+                resultsList.innerHTML = '';
+                
+                if (allDetections.length === 0) {
+                    resultsList.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-search"></i>
+                            <p>未检测到任何目标</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                currentPageDetections.forEach((item, index) => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'detail-item';
+                    
+                    const classInitial = item.class.charAt(0).toUpperCase();
+                    const confidencePercent = (item.confidence * 100).toFixed(2);
+                    let frameInfo = '';
+                    
+                    if (isVideoFile && item.frame !== undefined) {
+                        frameInfo = `<span class="detail-frame">帧: ${item.frame}</span>`;
+                    }
+                    
+                    resultItem.innerHTML = `
+                        <div class="detail-info">
+                            <div class="detail-icon">${classInitial}</div>
+                            <div class="detail-text">
+                                <span class="detail-class">${item.class}</span>
+                                <span class="detail-id">#${startIndex + index + 1} ${frameInfo}</span>
+                            </div>
+                        </div>
+                        <div class="detail-confidence">
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: ${confidencePercent}%"></div>
+                            </div>
+                            <span>${confidencePercent}%</span>
+                        </div>
+                    `;
+                    
+                    resultsList.appendChild(resultItem);
+                });
+                
+                updatePagination(page, Math.ceil(allDetections.length / itemsPerPage));
+            }
+            
+            function updatePagination(currentPage, totalPages) {
+                paginationControls.innerHTML = '';
+                    
+                if (totalPages <= 1) {
+                    return;
+                }
+                
+                const prevButton = document.createElement('button');
+                prevButton.innerHTML = '&laquo;';
+                prevButton.disabled = currentPage === 1;
+                prevButton.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        displayDetailedResults(currentPage - 1);
+                    }
+                });
+                paginationControls.appendChild(prevButton);
+                
+                const maxPageButtons = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+                
+                if (endPage - startPage + 1 < maxPageButtons) {
+                    startPage = Math.max(1, endPage - maxPageButtons + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.textContent = i;
+                    pageButton.classList.toggle('active', i === currentPage);
+                    pageButton.addEventListener('click', () => {
+                        displayDetailedResults(i);
+                    });
+                    paginationControls.appendChild(pageButton);
+                }
+                
+                const nextButton = document.createElement('button');
+                nextButton.innerHTML = '&raquo;';
+                nextButton.disabled = currentPage === totalPages;
+                nextButton.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        displayDetailedResults(currentPage + 1);
+                    }
+                });
+                paginationControls.appendChild(nextButton);
+            }
+            
+            function showLoader() {
+                loader.style.display = 'block';
+                predictButton.disabled = true;
+            }
+            
+            function hideLoader() {
+                loader.style.display = 'none';
+                predictButton.disabled = false;
+            }
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+            
+            function hideError() {
+                errorMessage.style.display = 'none';
+            }
+            
+            function hideResults() {
+                resultsContainer.style.display = 'none';
+                imageResultContainer.style.display = 'none';
+                videoResultContainer.style.display = 'none';
+            }
+            
+            document.querySelectorAll('.results-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.results-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.results-pane').forEach(p => p.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
